@@ -25,7 +25,7 @@ class KullanıcıOnayıResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(User::query()) // Tüm kullanıcılar
+            ->query(User::query())
             ->columns([
                 TextColumn::make('name')->label('Ad Soyad'),
                 TextColumn::make('email')->label('E-posta'),
@@ -36,6 +36,14 @@ class KullanıcıOnayıResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger'),
+
+                IconColumn::make('is_admin') // ← BURASI YENİ
+                ->label('Admin')
+                    ->boolean()
+                    ->trueIcon('heroicon-s-shield-check') // dolu ikon
+                    ->falseIcon('heroicon-o-shield-check') // boş ikon
+                    ->trueColor('info')
+                    ->falseColor('gray'),
             ])
             ->filters([
                 SelectFilter::make('onay_durumu')
@@ -50,7 +58,6 @@ class KullanıcıOnayıResource extends Resource
                         } elseif (($data['value'] ?? null) === 'not_approved') {
                             return $query->where('is_approved', false);
                         }
-
                         return $query;
                     }),
             ])
@@ -75,6 +82,27 @@ class KullanıcıOnayıResource extends Resource
                         $record->save();
                     })
                     ->visible(fn (User $record) => $record->is_approved),
+
+                Action::make('make_admin')
+                    ->label('Admin Yap')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('info')
+                    ->action(function (User $record) {
+                        $record->is_admin = true;
+                        $record->save();
+                    })
+                    ->visible(fn (User $record) => !$record->is_admin),
+
+                Action::make('remove_admin')
+                    ->label('Adminliği Kaldır')
+                    ->icon('heroicon-s-shield-exclamation')
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->action(function (User $record) {
+                        $record->is_admin = false;
+                        $record->save();
+                    })
+                    ->visible(fn (User $record) => $record->is_admin),
 
                 DeleteAction::make()
                     ->label('Üyeyi Sil')
@@ -106,6 +134,10 @@ class KullanıcıOnayıResource extends Resource
                 Forms\Components\Toggle::make('is_approved')
                     ->label('Hemen Onayla')
                     ->default(true),
+
+                Forms\Components\Toggle::make('is_admin')
+                    ->label('Admin Yetkisi Ver')
+                    ->default(false),
             ]);
     }
 

@@ -3,15 +3,19 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EtkinlikYönetimiResource\Pages;
-use App\Filament\Resources\EtkinlikYönetimiResource\RelationManagers;
 use App\Models\EtkinlikYönetimi;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Illuminate\Database\Eloquent\Collection;
 
 class EtkinlikYönetimiResource extends Resource
 {
@@ -23,20 +27,77 @@ class EtkinlikYönetimiResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                //
-            ]);
+        return $form->schema([
+            TextInput::make('baslik')
+                ->label('Başlık')
+                ->required()
+                ->maxLength(255),
+
+            Textarea::make('aciklama')
+                ->label('Açıklama')
+                ->rows(5),
+
+            DateTimePicker::make('baslangic_tarihi')
+                ->label('Başlangıç Tarihi')
+                ->required(),
+
+            DateTimePicker::make('bitis_tarihi')
+                ->label('Bitiş Tarihi')
+                ->required(),
+
+            Forms\Components\Select::make('adres')
+                ->label('Şehir')
+                ->options(self::getSehirListesi())
+                ->searchable()
+                ->required(),
+
+            Forms\Components\Select::make('tur')
+                ->label('Etkinlik Türü')
+                ->options([
+                    'müzik' => 'Müzik',
+                    'sinema'=>'Sinema',
+                    'tiyatro'=>'Tiyatro',
+                    'spor'=>'Spor',
+                    'atölye' => 'Atölye',
+                    'diger' => 'Diğer',
+                ])
+                ->searchable()
+                ->required(),
+
+            Toggle::make('aktif')
+                ->label('Aktif mi?')
+                ->default(true),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('baslik')->label('Başlık')->searchable()->sortable(),
+                TextColumn::make('tur')->label('Tür')->badge()->sortable(),
+                TextColumn::make('adres')->label('Şehir')->sortable()->searchable(),
+                TextColumn::make('baslangic_tarihi')->label('Başlangıç')->dateTime(),
+                TextColumn::make('bitis_tarihi')->label('Bitiş')->dateTime(),
+                IconColumn::make('aktif')->label('Aktif')->boolean(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('adres')
+                    ->label('Şehir')
+                    ->options(self::getSehirListesi())
+                    ->searchable(),
+
+                Tables\Filters\SelectFilter::make('tur')
+                    ->label('Etkinlik Türü')
+                    ->options([
+                        'müzik' => 'Müzik',
+                        'sinema' => 'Sinema',
+                        'tiyatro' => 'Tiyatro',
+                        'spor' => 'Spor',
+                        'atölye' => 'Atölye',
+                        'diger' => 'Diğer',
+                    ])
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -44,15 +105,22 @@ class EtkinlikYönetimiResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('aktif_et')
+                        ->label('Aktif Et')
+                        ->icon('heroicon-o-check')
+                        ->action(fn (Collection $records) => $records->each->update(['aktif' => true])),
+
+                    Tables\Actions\BulkAction::make('pasif_et')
+                        ->label('Pasif Et')
+                        ->icon('heroicon-o-x-mark')
+                        ->action(fn (Collection $records) => $records->each->update(['aktif' => false])),
                 ]),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -61,6 +129,93 @@ class EtkinlikYönetimiResource extends Resource
             'index' => Pages\ListEtkinlikYönetimis::route('/'),
             'create' => Pages\CreateEtkinlikYönetimi::route('/create'),
             'edit' => Pages\EditEtkinlikYönetimi::route('/{record}/edit'),
+        ];
+    }
+
+    protected static function getSehirListesi(): array
+    {
+        return [
+            'Adana' => 'Adana',
+            'Adıyaman' => 'Adıyaman',
+            'Afyonkarahisar' => 'Afyonkarahisar',
+            'Ağrı' => 'Ağrı',
+            'Amasya' => 'Amasya',
+            'Ankara' => 'Ankara',
+            'Antalya' => 'Antalya',
+            'Artvin' => 'Artvin',
+            'Aydın' => 'Aydın',
+            'Balıkesir' => 'Balıkesir',
+            'Bilecik' => 'Bilecik',
+            'Bingöl' => 'Bingöl',
+            'Bitlis' => 'Bitlis',
+            'Bolu' => 'Bolu',
+            'Burdur' => 'Burdur',
+            'Bursa' => 'Bursa',
+            'Çanakkale' => 'Çanakkale',
+            'Çankırı' => 'Çankırı',
+            'Çorum' => 'Çorum',
+            'Denizli' => 'Denizli',
+            'Diyarbakır' => 'Diyarbakır',
+            'Edirne' => 'Edirne',
+            'Elazığ' => 'Elazığ',
+            'Erzincan' => 'Erzincan',
+            'Erzurum' => 'Erzurum',
+            'Eskişehir' => 'Eskişehir',
+            'Gaziantep' => 'Gaziantep',
+            'Giresun' => 'Giresun',
+            'Gümüşhane' => 'Gümüşhane',
+            'Hakkâri' => 'Hakkâri',
+            'Hatay' => 'Hatay',
+            'Isparta' => 'Isparta',
+            'Mersin' => 'Mersin',
+            'İstanbul' => 'İstanbul',
+            'İzmir' => 'İzmir',
+            'Kars' => 'Kars',
+            'Kastamonu' => 'Kastamonu',
+            'Kayseri' => 'Kayseri',
+            'Kırklareli' => 'Kırklareli',
+            'Kırşehir' => 'Kırşehir',
+            'Kocaeli' => 'Kocaeli',
+            'Konya' => 'Konya',
+            'Kütahya' => 'Kütahya',
+            'Malatya' => 'Malatya',
+            'Manisa' => 'Manisa',
+            'Kahramanmaraş' => 'Kahramanmaraş',
+            'Mardin' => 'Mardin',
+            'Muğla' => 'Muğla',
+            'Muş' => 'Muş',
+            'Nevşehir' => 'Nevşehir',
+            'Niğde' => 'Niğde',
+            'Ordu' => 'Ordu',
+            'Rize' => 'Rize',
+            'Sakarya' => 'Sakarya',
+            'Samsun' => 'Samsun',
+            'Siirt' => 'Siirt',
+            'Sinop' => 'Sinop',
+            'Sivas' => 'Sivas',
+            'Tekirdağ' => 'Tekirdağ',
+            'Tokat' => 'Tokat',
+            'Trabzon' => 'Trabzon',
+            'Tunceli' => 'Tunceli',
+            'Şanlıurfa' => 'Şanlıurfa',
+            'Uşak' => 'Uşak',
+            'Van' => 'Van',
+            'Yozgat' => 'Yozgat',
+            'Zonguldak' => 'Zonguldak',
+            'Aksaray' => 'Aksaray',
+            'Bayburt' => 'Bayburt',
+            'Karaman' => 'Karaman',
+            'Kırıkkale' => 'Kırıkkale',
+            'Batman' => 'Batman',
+            'Şırnak' => 'Şırnak',
+            'Bartın' => 'Bartın',
+            'Ardahan' => 'Ardahan',
+            'Iğdır' => 'Iğdır',
+            'Yalova' => 'Yalova',
+            'Karabük' => 'Karabük',
+            'Kilis' => 'Kilis',
+            'Osmaniye' => 'Osmaniye',
+            'Düzce' => 'Düzce',
         ];
     }
 }
