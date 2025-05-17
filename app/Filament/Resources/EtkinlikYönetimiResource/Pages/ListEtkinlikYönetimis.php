@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\EtkinlikYönetimiResource\Pages;
 
+namespace App\Filament\Resources\EtkinlikYönetimiResource\Pages;
+
 use App\Filament\Resources\EtkinlikYönetimiResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +15,8 @@ class ListEtkinlikYönetimis extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('Etkinlik Ekle'),
         ];
     }
 }
+
