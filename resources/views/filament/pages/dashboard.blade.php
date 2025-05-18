@@ -15,7 +15,7 @@
                           d="M5.121 17.804A9.956 9.956 0 0112 15c2.21 0 4.243.717 5.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 <div>
-                    <div class="text-sm text-gray-600">Toplam Kullanıcı</div>
+                    <div class="text-sm text-black dark:text-white">Toplam Kullanıcı</div>
                     <div class="text-lg font-bold">{{ $totalUsers }}</div>
                 </div>
             </div>
@@ -27,7 +27,7 @@
                     <path d="M5 13l4 4L19 7" />
                 </svg>
                 <div>
-                    <div class="text-sm text-gray-600">Onaylı Kullanıcı</div>
+                    <div class="text-sm text-black dark:text-white">Onaylı Kullanıcı</div>
                     <div class="text-lg font-bold">{{ $approvedUsers }}</div>
                 </div>
             </div>
@@ -39,7 +39,7 @@
                     <path d="M6 18L18 6M6 6l12 12" />
                 </svg>
                 <div>
-                    <div class="text-sm text-gray-600">Onaysız Kullanıcı</div>
+                    <div class="text-sm text-black dark:text-white">Onaysız Kullanıcı</div>
                     <div class="text-lg font-bold">{{ $unapprovedUsers }}</div>
                 </div>
             </div>
@@ -47,15 +47,15 @@
     </div>
 
     <x-filament::card class="mb-6">
-        <div class="bg-gray-800 text-white text-lg font-bold px-4 py-2 rounded mb-4">
+        <div class="text-lg font-bold px-4 py-2 rounded mb-4 text-black dark:text-white bg-gray-100 dark:bg-gray-800">
             Son Kullanıcılar
         </div>
 
-        <ul class="divide-y divide-gray-700">
+        <ul class="divide-y divide-gray-700 dark:divide-gray-200">
             @foreach(\App\Models\User::latest()->take(5)->get() as $user)
                 <li class="py-2 flex justify-between">
-                    <span>{{ $user->name }}</span>
-                    <span class="text-sm text-gray-400">{{ $user->created_at->format('d.m.Y H:i') }}</span>
+                    <span class="text-black dark:text-white">{{ $user->name }}</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $user->created_at->format('d.m.Y H:i') }}</span>
                 </li>
             @endforeach
         </ul>
@@ -64,8 +64,8 @@
 
     {{-- ✅ Onay Bekleyen Kullanıcılar --}}
     <x-filament::card class="mb-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-bold">Onay Bekleyen Kullanıcılar</h2>
+        <div class="flex items-center justify-between text-lg font-bold px-4 py-2 rounded mb-4 text-black dark:text-white bg-gray-100 dark:bg-gray-800">
+            <span>Onay Bekleyen Kullanıcılar</span>
             <a
                 href="{{ \App\Filament\Resources\KullanıcıOnayıResource::getUrl() . '?tableFilters[is_approved]=0' }}"
                 class="text-sm text-primary-600 hover:underline"

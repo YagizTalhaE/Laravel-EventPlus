@@ -54,11 +54,12 @@ class EtkinlikYönetimiResource extends Resource
             Forms\Components\Select::make('tur')
                 ->label('Etkinlik Türü')
                 ->options([
-                    'müzik' => 'Müzik',
-                    'sinema'=>'Sinema',
-                    'tiyatro'=>'Tiyatro',
-                    'spor'=>'Spor',
-                    'atölye' => 'Atölye',
+                    'muzik' => 'Müzik',
+                    'sinema' => 'Sinema',
+                    'tiyatro' => 'Tiyatro',
+                    'spor' => 'Spor',
+                    'egitim' => 'Eğitim',
+                    'atolye' => 'Atölye',
                     'diger' => 'Diğer',
                 ])
                 ->searchable()
@@ -77,8 +78,15 @@ class EtkinlikYönetimiResource extends Resource
                 TextColumn::make('baslik')->label('Başlık')->searchable()->sortable(),
                 TextColumn::make('tur')->label('Tür')->badge()->sortable(),
                 TextColumn::make('adres')->label('Şehir')->sortable()->searchable(),
-                TextColumn::make('baslangic_tarihi')->label('Başlangıç')->dateTime(),
-                TextColumn::make('bitis_tarihi')->label('Bitiş')->dateTime(),
+                TextColumn::make('baslangic_tarihi')
+                    ->label('Başlangıç')
+                    ->dateTime()
+                    ->sortable(),
+
+                TextColumn::make('bitis_tarihi')
+                    ->label('Bitiş')
+                    ->dateTime()
+                    ->sortable(),
                 IconColumn::make('aktif')->label('Aktif')->boolean(),
             ])
             ->filters([
@@ -90,11 +98,12 @@ class EtkinlikYönetimiResource extends Resource
                 Tables\Filters\SelectFilter::make('tur')
                     ->label('Etkinlik Türü')
                     ->options([
-                        'müzik' => 'Müzik',
+                        'muzik' => 'Müzik',
                         'sinema' => 'Sinema',
                         'tiyatro' => 'Tiyatro',
                         'spor' => 'Spor',
-                        'atölye' => 'Atölye',
+                        'egitim' => 'Eğitim',
+                        'atolye' => 'Atölye',
                         'diger' => 'Diğer',
                     ])
                     ->searchable(),
