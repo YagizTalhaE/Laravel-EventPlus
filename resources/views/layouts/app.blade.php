@@ -42,21 +42,18 @@
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-section">
-            <h4>Bilgiler</h4>
-            <ul>
-                <li><a href="#">İletişim</a></li>
-                <li><a href="#">Sıkça Sorulan Sorular</a></li>
-                <li><a href="#">Gizlilik Politikası</a></li>
-                <li><a href="#">Kullanım Koşulları</a></li>
-            </ul>
+            <h4>İletişim</h4>
+            <p>Adres: {{ $ayarlar->adres ?? 'Adres bilgisi yok' }}</p>
+            <p>Telefon: {{ $ayarlar->telefon ?? 'Telefon bilgisi yok' }}</p>
+            <p>Email: {{ $ayarlar->site_mail ?? 'Email bilgisi yok' }}</p>
         </div>
         <div class="footer-section">
             <h4>Hakkımda</h4>
-            <p>EventPlus, TicketPass güvencesiyle şehrindeki en iyi etkinlikleri keşfetmeniz için kuruldu. Sizlere kaliteli ve güncel etkinlik bilgileri sunmayı amaçlıyoruz.</p>
+            <p>{!! nl2br(e($ayarlar->hakkimda ?? 'Hakkımda bilgisi yok')) !!}</p>
         </div>
     </div>
     <div class="footer-bottom">
-        <p>&copy; 2025 EventPlus. Tüm hakları saklıdır.</p>
+        <p>&copy; 2025 TicketPass - EventPlus. Tüm hakları saklıdır.</p>
     </div>
 </footer>
 

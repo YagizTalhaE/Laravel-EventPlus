@@ -48,6 +48,7 @@ class SiteAyarlar extends Page implements Forms\Contracts\HasForms
             'telefon' => $this->ayar->telefon,
             'adres' => $this->ayar->adres,
             'vergi_no' => $this->ayar->vergi_no,
+            'hakkimda' => $this->ayar->hakkimda, // yeni alan
         ];
     }
 
@@ -85,6 +86,10 @@ class SiteAyarlar extends Page implements Forms\Contracts\HasForms
                     Textarea::make('adres')->rows(2),
                     TextInput::make('vergi_no')->label('Vergi No'),
                 ]),
+            ]),
+
+            Section::make('Hakkımda')->schema([
+                Textarea::make('hakkimda')->label('Hakkımda')->rows(5),
             ]),
         ];
     }
