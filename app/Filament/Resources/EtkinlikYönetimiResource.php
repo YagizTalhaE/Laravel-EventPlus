@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -68,6 +69,17 @@ class EtkinlikYönetimiResource extends Resource
             Toggle::make('aktif')
                 ->label('Aktif mi?')
                 ->default(true),
+
+            FileUpload::make('gorsel')
+                ->label('Etkinlik Görseli')
+                ->directory('etkinlikler')
+                ->image()
+                ->imageEditor()
+                ->preserveFilenames()
+                ->downloadable()
+                ->previewable(true)
+                ->openable()
+                ->nullable(),
         ]);
     }
 
@@ -82,7 +94,6 @@ class EtkinlikYönetimiResource extends Resource
                     ->label('Başlangıç')
                     ->dateTime()
                     ->sortable(),
-
                 TextColumn::make('bitis_tarihi')
                     ->label('Bitiş')
                     ->dateTime()
@@ -118,7 +129,6 @@ class EtkinlikYönetimiResource extends Resource
                         ->label('Aktif Et')
                         ->icon('heroicon-o-check')
                         ->action(fn (Collection $records) => $records->each->update(['aktif' => true])),
-
                     Tables\Actions\BulkAction::make('pasif_et')
                         ->label('Pasif Et')
                         ->icon('heroicon-o-x-mark')

@@ -19,8 +19,14 @@ class RegisterController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'required|email|unique:users',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|confirmed|min:6',
+        ], [
+            'email.unique' => 'Bu eposta adresi kullanılıyor.',
+            'email.required' => 'Eposta alanı zorunludur.',
+            'password.confirmed' => 'Şifre tekrarı eşleşmiyor.',
+            'password.min' => 'Şifre en az 6 karakter olmalı.',
+            'name.required' => 'İsim alanı zorunludur.',
         ]);
 
         $user = User::create([
@@ -33,4 +39,3 @@ class RegisterController extends Controller
         return redirect('/dashboard');
     }
 }
-

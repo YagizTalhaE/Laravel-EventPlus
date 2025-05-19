@@ -19,6 +19,7 @@ class EtkinlikYönetimi extends Model
         'aktif',
         'adres',
         'tur',
+        'gorsel'
     ];
 }
 

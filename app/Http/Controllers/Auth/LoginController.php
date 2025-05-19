@@ -18,13 +18,23 @@ class LoginController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+
+            // is_approved kontrolü
+            if (! $user->is_approved) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Hesabınız onaylanmamıştır.',
+                ])->withInput();
+            }
+
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+            return redirect()->intended('/anasayfa'); // Giriş sonrası yönlendirme
         }
 
         return back()->withErrors([
-            'email' => 'Giriş bilgileri hatalı.',
-        ]);
+            'email' => 'E-Posta ve şifrenizi kontrol edin.',
+        ])->withInput();
     }
 
     public function logout(Request $request)
@@ -35,4 +45,3 @@ class LoginController extends Controller
         return redirect('/login');
     }
 }
-
