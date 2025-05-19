@@ -157,9 +157,10 @@ position: relative;
 }
 
 .hero-content h1 {
-font-size: 2.8rem;
-margin-bottom: 10px;
-text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    font-size: 2.8rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    color: white;
 }
 
 .hero-content p {
@@ -329,3 +330,160 @@ color: #e67e22;
     font-size: 0.85rem;
     color: #bdc3c7;
 }
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    background-color: #f4f4f4;
+}
+
+.auth-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-box h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+.auth-box form label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+    color: #555;
+}
+
+.auth-box form input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.auth-box .btn.primary {
+    width: 100%;
+    background-color: #e50914;
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.auth-box .btn.primary:hover {
+    background-color: #c40812;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 16px;
+    color: #555;
+}
+
+.auth-switch a {
+    color: #e50914;
+    text-decoration: none;
+}
+
+.alert {
+    background-color: #f8d7da;
+    color: #842029;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #f5c2c7;
+}
+
+.logo-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f2f4f8;
+    color: #333;
+    margin: 0;
+}
+
+h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-info {
+    flex-grow: 1;
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+a {
+    display: inline-block;
+    margin-top: 20px;
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+    text-align: center;
+    display: block;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+form {
+    display: inline;
+}
+
+
+
+

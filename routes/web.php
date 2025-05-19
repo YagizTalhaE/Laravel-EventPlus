@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\CartController;
 
 Route::get('/anasayfa', function () {
     return view('anasayfa');  // resources/views/anasayfa.blade.php dosyasını gösterir
@@ -30,6 +31,18 @@ Route::get('/events/search', [EventController::class, 'search'])->name('events.s
 Route::get('/anasayfa', function () {
     return view('anasayfa');  // resources/views/anasayfa.blade.php dosyasını gösterir
 })->name('anasayfa');
+
+Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+Route::post('/events', [EventController::class, 'store'])->name('events.store');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+
+Route::get('/products', function () {
+    return view('products.index');
+})->name('products.index');
+
 
 Route::get('/duyuru/{id}', function ($id) {
     $duyuru = Duyurular::findOrFail($id);

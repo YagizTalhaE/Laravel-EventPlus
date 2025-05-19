@@ -11,8 +11,10 @@
 <!-- Navbar -->
 <nav class="navbar">
     <div class="logo">
-        <img src="{{ asset('/logo.png') }}" alt="EventPlus Logo" class="logo-img" />
-        EventPlus
+        <a href="{{ url('/') }}" class="logo-link">
+            <img src="{{ asset('/logo.png') }}" alt="EventPlus Logo" class="logo-img" />
+            EventPlus
+        </a>
     </div>
 
     <ul class="nav-links">
@@ -28,10 +30,32 @@
                 <li><a href="#">Diğer</a></li>
             </ul>
         </li>
-        <li><a href="{{ route('login') }}" class="btn login">Giriş Yap</a></li>
-        <li><a href="{{ route('register') }}" class="btn signup">Kayıt Ol</a></li>
+
+        @auth
+            <li>
+                <a href="{{ route('cart.index') }}" class="btn cart">
+                    🛒 Sepetim
+                </a>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropbtn">{{ Auth::user()->name }}</a>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Profil</a></li>
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="logout-button">Çıkış Yap</button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        @else
+            <li><a href="{{ route('login') }}" class="btn login">Giriş Yap</a></li>
+            <li><a href="{{ route('register') }}" class="btn signup">Kayıt Ol</a></li>
+        @endauth
     </ul>
 </nav>
+
 
 <!-- Ana İçerik -->
 <main>
