@@ -6,12 +6,13 @@ use App\Filament\Resources\DuyurularResource\Pages;
 use App\Models\Duyurular;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BooleanColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
 
@@ -26,9 +27,20 @@ class DuyurularResource extends Resource
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
-            TextInput::make('baslik')->label('Başlık')->required(),
-            Textarea::make('icerik')->label('İçerik')->required(),
-            Toggle::make('aktif')->label('Yayında mı?'),
+            TextInput::make('baslik')
+                ->label('Başlık')
+                ->required()
+                ->maxLength(100),
+
+            Textarea::make('icerik')
+                ->label('İçerik')
+                ->rows(5)
+                ->required(),
+
+            Toggle::make('aktif')
+                ->label('Yayında mı?')
+                ->onColor('success')
+                ->offColor('gray'),
         ]);
     }
 
@@ -36,10 +48,24 @@ class DuyurularResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('baslik')->label('Başlık')->searchable()->sortable(),
-                BooleanColumn::make('aktif')->label('Yayında'),
-                TextColumn::make('views')->label('Görüntülenme')->sortable(),
-                TextColumn::make('created_at')->label('Oluşturulma')->dateTime('d.m.Y H:i'),
+                TextColumn::make('baslik')
+                    ->label('Başlık')
+                    ->searchable()
+                    ->sortable(),
+
+                IconColumn::make('aktif')
+                    ->boolean()
+                    ->label('Yayında mı?'),
+
+                TextColumn::make('created_at')
+                    ->label('Tarih')
+                    ->dateTime('d M Y H:i')
+                    ->sortable(),
+            ])
+            ->filters([
+                Filter::make('aktif')
+                    ->label('Yayında Olanlar')
+                    ->query(fn ($query) => $query->where('aktif', true)),
             ])
             ->actions([
                 EditAction::make(),

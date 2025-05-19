@@ -18,8 +18,10 @@ class EtkinlikYönetimi extends Model
         'bitis_tarihi',
         'aktif',
         'adres',
+        'ilce',
+        'mekan',
         'tur',
-        'gorsel'
+        'gorsel',
     ];
 }
 

@@ -51,4 +51,8 @@ class User extends Authenticatable
     {
         return $query->where('is_approved', false);
     }
+    public function clicks()
+    {
+        return $this->hasMany(Click::class);
+    }
 }

@@ -65,10 +65,15 @@ class EtkinlikYönetimiResource extends Resource
                 ])
                 ->searchable()
                 ->required(),
+            TextInput::make('ilce')
+                ->label('İlçe')
+                ->maxLength(255)
+                ->required(),
+            TextInput::make('mekan')
+                ->label('Mekan Adı')
+                ->maxLength(255)
+                ->required(),
 
-            Toggle::make('aktif')
-                ->label('Aktif mi?')
-                ->default(true),
 
             FileUpload::make('gorsel')
                 ->label('Etkinlik Görseli')
@@ -80,6 +85,10 @@ class EtkinlikYönetimiResource extends Resource
                 ->previewable(true)
                 ->openable()
                 ->nullable(),
+            Toggle::make('aktif')
+                ->label('Aktif mi?')
+                ->default(true),
+
         ]);
     }
 
@@ -90,6 +99,8 @@ class EtkinlikYönetimiResource extends Resource
                 TextColumn::make('baslik')->label('Başlık')->searchable()->sortable(),
                 TextColumn::make('tur')->label('Tür')->badge()->sortable(),
                 TextColumn::make('adres')->label('Şehir')->sortable()->searchable(),
+                TextColumn::make('ilce')->label('İlçe')->sortable()->searchable(),
+                TextColumn::make('mekan')->label('Mekan')->searchable()->sortable(),
                 TextColumn::make('baslangic_tarihi')
                     ->label('Başlangıç')
                     ->dateTime()
@@ -235,6 +246,6 @@ class EtkinlikYönetimiResource extends Resource
             'Kilis' => 'Kilis',
             'Osmaniye' => 'Osmaniye',
             'Düzce' => 'Düzce',
-        ];
-    }
+            ];
+        }
 }
