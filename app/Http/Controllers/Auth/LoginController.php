@@ -20,7 +20,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
-            // is_approved kontrolü
+            // Kullanıcı onaylı mı kontrol et
             if (! $user->is_approved) {
                 Auth::logout();
                 return back()->withErrors([
@@ -28,8 +28,14 @@ class LoginController extends Controller
                 ])->withInput();
             }
 
+            // Şifre değişimi gerekiyor mu?
+            if ($user->must_change_password) {
+                return redirect()->route('password.change.form');
+            }
+
+            // Başarılı giriş
             $request->session()->regenerate();
-            return redirect()->intended('/anasayfa'); // Giriş sonrası yönlendirme
+            return redirect()->intended('/anasayfa');
         }
 
         return back()->withErrors([

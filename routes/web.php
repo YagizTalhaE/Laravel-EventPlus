@@ -12,6 +12,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfilController;
 
 // Anasayfa (/ ve /anasayfa aynı view'a gider)
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -24,6 +25,11 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
+
+Route::get('/duyurular/{id}', [DuyuruController::class, 'show'])->name('duyurular.show');
+
+Route::get('/change-password', [App\Http\Controllers\Auth\ChangePasswordController::class, 'showChangeForm'])->name('password.change.form');
+Route::post('/change-password', [App\Http\Controllers\Auth\ChangePasswordController::class, 'updatePassword'])->name('password.change');
 
 // Kullanıcı Dashboard
 Route::get('/dashboard', function () {
@@ -65,3 +71,20 @@ Route::get('/duyuru/{id}', function ($id) {
 
 // Post Detay Sayfası
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+
+Route::middleware(['auth'])->group(function () {
+    // Profilim - Bilgileri Görüntüle ve Güncelle
+    Route::get('/profilim', [ProfilController::class, 'profilim'])->name('profilim');
+
+// Şifre Değiştir
+    Route::get('/profilim/sifre-degistir', [ProfilController::class, 'showChangePasswordForm'])->name('sifre.degis');
+    Route::put('/profilim/sifre-guncelle', [ProfilController::class, 'changePassword'])->name('profilim.sifre.guncelle');
+
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/hesap/ayar', [ProfilController::class, 'hesapAyar'])->name('hesap.ayar');
+    Route::post('/hesap/ayar', [ProfilController::class, 'hesapAyarGuncelle'])->name('hesap.ayar.guncelle');
+    Route::delete('/hesap/sil', [ProfilController::class, 'hesapSil'])->name('hesap.sil');
+});
+

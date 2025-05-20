@@ -39,7 +39,6 @@ class SiteAyarlar extends Page implements Forms\Contracts\HasForms
         $this->data = [
             'site_adi' => $this->ayar->site_adi,
             'site_mail' => $this->ayar->site_mail,
-            'bakim_modu' => $this->ayar->bakim_modu,
             'facebook' => $this->ayar->facebook,
             'twitter' => $this->ayar->twitter,
             'instagram' => $this->ayar->instagram,
@@ -66,7 +65,6 @@ class SiteAyarlar extends Page implements Forms\Contracts\HasForms
                 Grid::make(2)->schema([
                     TextInput::make('site_adi')->label('Site Adı'),
                     TextInput::make('site_mail')->label('Site Maili'),
-                    Toggle::make('bakim_modu')->label('Bakım Modu'),
                 ]),
             ]),
 
