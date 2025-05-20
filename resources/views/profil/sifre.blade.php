@@ -45,7 +45,7 @@
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label for="password_confirmation">Yeni Şifre (Tekrar)</label>
+                <label for="password_confirmation">Yeni Şifren (Tekrar)</label>
                 <input type="password" name="password_confirmation" id="password_confirmation" required style="width: 100%; padding: 8px;">
             </div>
 
