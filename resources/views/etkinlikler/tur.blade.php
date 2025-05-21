@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'EventPlus - Ana Sayfa')
+@section('title', 'EventPlus - Etkinlikler')
 
 @section('content')
 
@@ -73,29 +73,26 @@
             </section>
         </div>
 
-        <!-- ORTA: Popüler Etkinlikler -->
+        <!-- ORTA: Tür Etkinlikleri -->
         <div style="flex: 2;">
             <section class="events">
-                <h2>Popüler Etkinlikler</h2>
+                <h2>{{ ucfirst($tur) }} Etkinlikleri</h2>
                 <div class="event-grid">
-                    @foreach ($populerEvents as $etkinlik)
-                        <div class="event-card">
-                            <img src="{{ asset('storage/' . $etkinlik->gorsel) }}" alt="{{ $etkinlik->baslik }}" class="event-image">
-
+                    @forelse($etkinlikler as $etkinlik)
+                        <a href="{{ route('etkinlik.detay', ['slug' => $etkinlik->slug]) }}" class="event-card">
+                            <img src="{{ asset('storage/' . $etkinlik->gorsel) }}" alt="{{ $etkinlik->baslik }}" />
                             <div class="event-details">
-                                <a href="{{ route('etkinlik.detay', ['slug' => $etkinlik->slug]) }}" class="event-title-link">
-                                    {{ $etkinlik->baslik }}
-                                </a>
-
-                                <div class="event-info"><strong>Şehir:</strong> {{ $etkinlik->adres }}</div>
-                                <div class="event-info"><strong>Tarih:</strong> {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->translatedFormat('d F Y') }}</div>
-                                <div class="event-info"><strong>Saat:</strong> {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->format('H:i') }}</div>
-                                <div class="event-info"><strong>Kontenjan:</strong> {{ $etkinlik->kontenjan }} kişi</div>
-
-                                <div class="price">₺{{ number_format($etkinlik->bilet_fiyati, 2) }}</div>
+                                <h3>{{ $etkinlik->baslik }}</h3>
+                                <p><strong>Şehir:</strong> {{ $etkinlik->adres }}</p>
+                                <p><strong>Tarih:</strong> {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->translatedFormat('d F Y') }}</p>
+                                <p><strong>Saat:</strong> {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->format('H:i') }}</p>
+                                <p><strong>Kontenjan:</strong> {{ $etkinlik->kontenjan }} kişi</p>
+                                <span class="price">₺{{ number_format($etkinlik->bilet_fiyati, 2) }}</span>
                             </div>
-                        </div>
-                    @endforeach
+                        </a>
+                    @empty
+                        <p>Bu türe ait etkinlik bulunamadı.</p>
+                    @endforelse
                 </div>
             </section>
         </div>
@@ -109,13 +106,13 @@
                     @if($recommendedPosts->count())
                         @foreach ($recommendedPosts as $event)
                             <div style="
-                        background: white;
-                        padding: 15px;
-                        border-radius: 10px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                        margin-bottom: 15px;
-                        transition: transform 0.2s ease;
-                    " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            background: white;
+                            padding: 15px;
+                            border-radius: 10px;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                            margin-bottom: 15px;
+                            transition: transform 0.2s ease;
+                        " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                                 @if ($event->gorsel)
                                     <img src="{{ asset('storage/' . $event->gorsel) }}" alt="{{ $event->baslik }}" style="width: 100%; height: auto; object-fit: cover; border-radius: 8px;" />
                                 @else

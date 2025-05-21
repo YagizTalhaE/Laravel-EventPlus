@@ -31,20 +31,24 @@
         <div class="dropdown">
             <a href="#" class="dropbtn" style="color: white; text-decoration: none;">Etkinlikler</a>
             <ul class="dropdown-menu">
-                <li><a href="#">Müzik</a></li>
-                <li><a href="#">Sinema</a></li>
-                <li><a href="#">Tiyatro</a></li>
-                <li><a href="#">Spor</a></li>
-                <li><a href="#">Eğitim</a></li>
-                <li><a href="#">Atölye</a></li>
-                <li><a href="#">Diğer</a></li>
+                <a href="{{ route('etkinlikler.tur', 'muzik') }}">Müzik</a>
+                <a href="{{ route('etkinlikler.tur', 'sinema') }}">Sinema</a>
+                <a href="{{ route('etkinlikler.tur', 'tiyatro') }}">Tiyatro</a>
+                <a href="{{ route('etkinlikler.tur', 'spor') }}">Spor</a>
+                <a href="{{ route('etkinlikler.tur', 'egitim') }}">Eğitim</a>
+                <a href="{{ route('etkinlikler.tur', 'atolye') }}">Atölye</a>
+                <a href="{{ route('etkinlikler.tur', 'diger') }}">Diğer</a>
             </ul>
         </div>
 
         <!-- Sepetim (sadece giriş yapılmışsa görünür) -->
-        @auth
-            <a href="{{ route('cart.index') }}" style="color: white; text-decoration: none;">🛒 Sepetim</a>
-        @endauth
+        <ul class="navbar-nav mx-auto">
+            @auth
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-bold" href="{{ route('cart.index') }}">🛒 Sepetim</a>
+                </li>
+            @endauth
+        </ul>
 
         <!-- Kullanıcı Dropdown -->
         @auth

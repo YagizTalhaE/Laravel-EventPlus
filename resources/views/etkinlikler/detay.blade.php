@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'EventPlus - Ana Sayfa')
+@section('title', 'EventPlus - Etkinlik')
 
 @section('content')
 
@@ -73,31 +73,73 @@
             </section>
         </div>
 
-        <!-- ORTA: Popüler Etkinlikler -->
-        <div style="flex: 2;">
-            <section class="events">
-                <h2>Popüler Etkinlikler</h2>
-                <div class="event-grid">
-                    @foreach ($populerEvents as $etkinlik)
-                        <div class="event-card">
-                            <img src="{{ asset('storage/' . $etkinlik->gorsel) }}" alt="{{ $etkinlik->baslik }}" class="event-image">
 
-                            <div class="event-details">
-                                <a href="{{ route('etkinlik.detay', ['slug' => $etkinlik->slug]) }}" class="event-title-link">
-                                    {{ $etkinlik->baslik }}
-                                </a>
+        <!-- ORTA: Etkinlik Detaylama -->
+        <div class="container">
+            <div class="event-detail" style="max-width: 800px; margin: auto; padding: 20px;">
 
-                                <div class="event-info"><strong>Şehir:</strong> {{ $etkinlik->adres }}</div>
-                                <div class="event-info"><strong>Tarih:</strong> {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->translatedFormat('d F Y') }}</div>
-                                <div class="event-info"><strong>Saat:</strong> {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->format('H:i') }}</div>
-                                <div class="event-info"><strong>Kontenjan:</strong> {{ $etkinlik->kontenjan }} kişi</div>
+                {{-- Ortalanmış Başlık ve Görsel --}}
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 20px;">{{ $etkinlik->baslik }}</h1>
 
-                                <div class="price">₺{{ number_format($etkinlik->bilet_fiyati, 2) }}</div>
-                            </div>
-                        </div>
-                    @endforeach
+                    <img src="{{ asset('storage/' . $etkinlik->gorsel) }}"
+                         alt="{{ $etkinlik->baslik }}"
+                         style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
                 </div>
-            </section>
+
+                {{-- Diğer içerikler sola hizalı şekilde devam eder --}}
+                <p><strong>Adres:</strong> {{ $etkinlik->adres }}, {{ $etkinlik->ilce }}</p>
+                <p><strong>Mekan:</strong> {{ $etkinlik->mekan }}</p>
+                <p><strong>Tarih:</strong>
+                    {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->translatedFormat('d F Y') }} -
+                    {{ \Carbon\Carbon::parse($etkinlik->bitis_tarihi)->translatedFormat('d F Y') }}
+                </p>
+
+                <p><strong>Saat:</strong>
+                    {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->format('H:i') }} -
+                    {{ \Carbon\Carbon::parse($etkinlik->bitis_tarihi)->format('H:i') }}
+                </p>
+                <p><strong>Kontenjan:</strong> {{ $etkinlik->kontenjan }} kişi</p>
+                <p><strong>Bilet Fiyatı:</strong> ₺{{ number_format($etkinlik->bilet_fiyati, 2) }}</p>
+
+                <hr style="margin: 20px 0;">
+
+                <h3 style="font-size: 1.2rem; font-weight: bold;">Etkinlik Detayları</h3>
+                <p>{!! nl2br(e($etkinlik->aciklama)) !!}</p>
+
+                <h3 style="font-size: 1.2rem; font-weight: bold; margin-top: 20px;">Kurallar</h3>
+                <p>{!! nl2br(e($etkinlik->kurallar)) !!}</p>
+
+                <hr style="margin: 20px 0;">
+
+                @if(session('success'))
+                    <div style="color: green; font-weight: bold; margin-bottom: 15px;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('sepete.ekle') }}" style="margin-top: 20px;">
+                    @csrf
+                    <input type="hidden" name="etkinlik_id" value="{{ $etkinlik->id }}">
+
+                    <label for="adet" style="font-weight: bold;">Bilet Adedi:</label>
+                    <input
+                        type="number"
+                        id="adet"
+                        name="adet"
+                        value="1"
+                        min="1"
+                        max="{{ $etkinlik->kontenjan }}"
+                        style="width: 80px; padding: 5px; margin-left: 10px; margin-bottom: 10px;">
+
+                    <button
+                        type="submit"
+                        style="display: inline-block; background-color: #ff6600; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                        Sepete Ekle
+                    </button>
+                </form>
+
+            </div>
         </div>
 
         <!-- SAĞ: Önerilen Etkinlikler -->
@@ -223,3 +265,4 @@
     </script>
 
 @endsection
+

@@ -14,6 +14,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfilController;
 
+
 // Anasayfa (/ ve /anasayfa aynı view'a gider)
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/anasayfa', [HomeController::class, 'index'])->name('anasayfa');
@@ -44,10 +45,10 @@ Route::get('/events/create', [EventController::class, 'create'])->name('events.c
 Route::post('/events', [EventController::class, 'store'])->name('events.store');
 
 // Sepet İşlemleri
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+Route::get('/sepet', [CartController::class, 'index'])->name('cart.index');
+Route::post('/sepete-ekle', [CartController::class, 'ekle'])->name('sepete.ekle');
+Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::delete('/sepet/bosalt', [CartController::class, 'clear'])->name('cart.clear');
 
 // Ürünler Sayfası
 Route::get('/products', function () {
@@ -88,3 +89,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/hesap/sil', [ProfilController::class, 'hesapSil'])->name('hesap.sil');
 });
 
+Route::get('/etkinlikler/tur/{tur}', [EventController::class, 'turBazliListele'])->name('etkinlikler.tur');
+Route::get('/etkinlik/{slug}', [EventController::class, 'detay'])->name('etkinlik.detay');
+
+Route::post('/sepet/ekle', [CartController::class, 'ekle'])->name('sepete.ekle');
+
+Route::get('/sepetim', [CartController::class, 'index'])->name('sepetim');
+Route::post('/sepet/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+
+Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+Route::post('/cart/checkout', [CartController::class, 'checkout']);
+
+Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::get('/cart/remove-get/{id}', [CartController::class, 'remove'])->name('cart.remove.get');

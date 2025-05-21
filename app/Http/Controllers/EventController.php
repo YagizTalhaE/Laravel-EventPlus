@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\EtkinlikYönetimi;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Duyurular;
 
 class EventController extends Controller
 {
@@ -40,6 +41,56 @@ class EventController extends Controller
         EtkinlikYönetimi::create($validated);
 
         return redirect()->route('events.index')->with('success', 'Etkinlik başarıyla oluşturuldu!');
+    }
+
+    public function turBazliListele($tur)
+    {
+        $tur = ucfirst(strtolower($tur));
+
+        $etkinlikler = EtkinlikYönetimi::where('tur', $tur)->paginate(9);
+        $duyurular = Duyurular::latest()->take(5)->get();
+        $recommendedPosts = auth()->check()
+            ? EtkinlikYönetimi::inRandomOrder()->take(3)->get()
+            : collect();
+
+        return view('etkinlikler.tur', [
+            'etkinlikler' => $etkinlikler,
+            'tur' => $tur,
+            'duyurular' => $duyurular,
+            'recommendedPosts' => $recommendedPosts,
+        ]);
+    }
+
+    public function tur($tur)
+    {
+        $etkinlikler = EtkinlikYönetimi::where('tur', $tur)->get();
+
+        $duyurular = Duyurular::latest()->take(5)->get(); // burası önemli ✅
+
+        $recommendedPosts = auth()->check()
+            ? EtkinlikYönetimi::inRandomOrder()->take(3)->get()
+            : collect();
+
+        return view('tur', [
+            'tur' => $tur,
+            'etkinlikler' => $etkinlikler,
+            'duyurular' => $duyurular,
+            'recommendedPosts' => $recommendedPosts,
+        ]);
+    }
+    public function detay($slug)
+    {
+        $etkinlik = EtkinlikYönetimi::where('slug', $slug)->firstOrFail();
+        $duyurular = Duyurular::latest()->take(5)->get();
+        $recommendedPosts = auth()->check()
+            ? EtkinlikYönetimi::inRandomOrder()->take(3)->get()
+            : collect();
+
+        return view('etkinlikler.detay', [
+            'etkinlik' => $etkinlik,
+            'duyurular' => $duyurular,
+            'recommendedPosts' => $recommendedPosts,
+        ]);
     }
 }
 

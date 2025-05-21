@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\Ayarlar;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\App;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -29,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
             $ayarlar = Ayarlar::first();
             $view->with('ayarlar', $ayarlar);
         });
+        Carbon::setLocale('tr');
+        setlocale(LC_TIME, 'tr_TR.UTF-8'); // tarih için
     }
 }
 

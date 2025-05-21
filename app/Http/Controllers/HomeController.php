@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Duyurular;
 use Illuminate\Support\Facades\DB;
+use App\Models\EtkinlikYönetimi;
 
 class HomeController extends Controller
 {
@@ -13,7 +14,13 @@ class HomeController extends Controller
     {
         $user = auth()->user();
 
-        // Giriş yapılmamışsa öneri ve duyuru göstermek isteğe bağlı
+        // Popüler ve aktif etkinlikleri al
+        $populerEvents = EtkinlikYönetimi::where('populer_mi', true)
+            ->where('aktif', true) // <--- burada aktif_mi değil aktif kullandık
+            ->latest()
+            ->limit(4)
+            ->get();
+
         if (!$user) {
             $duyurular = Duyurular::where('aktif', true)
                 ->latest()
@@ -23,10 +30,10 @@ class HomeController extends Controller
             return view('anasayfa', [
                 'recommendedPosts' => collect(),
                 'duyurular' => $duyurular,
+                'populerEvents' => $populerEvents,
             ]);
         }
 
-        // Kullanıcının en çok tıkladığı ilgi alanlarını getir
         $topInterestIds = DB::table('clicks')
             ->join('posts', 'clicks.post_id', '=', 'posts.id')
             ->select('posts.interest_id', DB::raw('count(*) as total'))
@@ -36,18 +43,16 @@ class HomeController extends Controller
             ->limit(3)
             ->pluck('posts.interest_id');
 
-        // O ilgi alanlarına göre önerilen postları getir
         $recommendedPosts = Post::whereIn('interest_id', $topInterestIds)
             ->latest()
             ->limit(10)
             ->get();
 
-        // Aktif duyuruları getir
         $duyurular = Duyurular::where('aktif', true)
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('anasayfa', compact('recommendedPosts', 'duyurular'));
+        return view('anasayfa', compact('recommendedPosts', 'duyurular', 'populerEvents'));
     }
 }

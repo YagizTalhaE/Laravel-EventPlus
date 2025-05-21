@@ -38,6 +38,13 @@ class EtkinlikYönetimiResource extends Resource
                 ->label('Açıklama')
                 ->rows(5),
 
+            Textarea::make('kurallar')
+                ->label('Etkinlik Kuralları')
+                ->rows(4)
+                ->placeholder('Etkinliğe katılım kurallarını buraya yazınız...')
+                ->columnSpan(2),
+
+
             DateTimePicker::make('baslangic_tarihi')
                 ->label('Başlangıç Tarihi')
                 ->required(),
@@ -74,6 +81,19 @@ class EtkinlikYönetimiResource extends Resource
                 ->maxLength(255)
                 ->required(),
 
+            TextInput::make('kontenjan')
+                ->label('Kontenjan')
+                ->numeric()
+                ->minValue(1)
+                ->required(),
+
+            TextInput::make('bilet_fiyati')
+                ->label('Bilet Fiyatı (₺)')
+                ->numeric()
+                ->minValue(0)
+                ->prefix('₺')
+                ->required(),
+
 
             FileUpload::make('gorsel')
                 ->label('Etkinlik Görseli')
@@ -85,9 +105,10 @@ class EtkinlikYönetimiResource extends Resource
                 ->previewable(true)
                 ->openable()
                 ->nullable(),
-            Toggle::make('aktif')
-                ->label('Aktif mi?')
-                ->default(true),
+            \Filament\Forms\Components\Grid::make(2)->schema([
+                \Filament\Forms\Components\Toggle::make('aktif_mi')->label('Aktif mi?'),
+                \Filament\Forms\Components\Toggle::make('populer_mi')->label('Popüler mi?'),
+            ]),
 
         ]);
     }
@@ -109,6 +130,10 @@ class EtkinlikYönetimiResource extends Resource
                     ->label('Bitiş')
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('kontenjan')
+                    ->label('Kontenjan')
+                    ->sortable()
+                    ->alignCenter(),
                 IconColumn::make('aktif')->label('Aktif')->boolean(),
             ])
             ->filters([
