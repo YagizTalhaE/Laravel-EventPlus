@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\EtkinlikYönetimi;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Duyurular;
+use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
 
 class EventController extends Controller
 {
@@ -13,10 +17,21 @@ class EventController extends Controller
     {
         $query = $request->input('query');
 
-        // Burada event modelini kullanarak gerçek arama yapılabilir.
-        // Şimdilik demo amaçlı sorguyu view'a gönderiyoruz.
+        $duyurular = Duyurular::latest()->take(5)->get(); // Örnek, anasayfadaki duyurular için
 
-        return view('events.search_results', compact('query'));
+        // Arama varsa etkinlikleri isme göre filtrele
+        $searchResults = EtkinlikYönetimi::where('baslik', 'like', "%{$query}%")->get();
+
+        // Önerilen etkinlikler veya diğer veriler burada da gönderilebilir
+        $recommendedPosts = auth()->check() ? $this->getRecommendedEvents() : collect();
+
+        return view('anasayfa', [
+            'duyurular' => $duyurular,
+            'recommendedPosts' => $recommendedPosts,
+            'populerEvents' => collect(), // boş bırakalım, çünkü arama yapıldı
+            'searchResults' => $searchResults,
+            'searchQuery' => $query,
+        ]);
     }
 
     public function store(Request $request)
@@ -47,7 +62,11 @@ class EventController extends Controller
     {
         $tur = ucfirst(strtolower($tur));
 
-        $etkinlikler = EtkinlikYönetimi::where('tur', $tur)->paginate(9);
+        $etkinlikler = EtkinlikYönetimi::where('tur', $tur)
+            ->where('aktif', true)
+            ->orderBy('baslangic_tarihi', 'asc')  // Tarihe göre sıralama burada
+            ->get();
+
         $duyurular = Duyurular::latest()->take(5)->get();
         $recommendedPosts = auth()->check()
             ? EtkinlikYönetimi::inRandomOrder()->take(3)->get()
@@ -80,17 +99,34 @@ class EventController extends Controller
     }
     public function detay($slug)
     {
-        $etkinlik = EtkinlikYönetimi::where('slug', $slug)->firstOrFail();
-        $duyurular = Duyurular::latest()->take(5)->get();
-        $recommendedPosts = auth()->check()
-            ? EtkinlikYönetimi::inRandomOrder()->take(3)->get()
-            : collect();
+        // Slug ile etkinliği bul (bulamazsa 404 döner)
+        $event = EtkinlikYönetimi::where('slug', $slug)->firstOrFail();
 
-        return view('etkinlikler.detay', [
-            'etkinlik' => $etkinlik,
-            'duyurular' => $duyurular,
-            'recommendedPosts' => $recommendedPosts,
-        ]);
+        // Aktif ve son 5 duyuruyu çek
+        $duyurular = Duyurular::where('aktif', 1)->latest()->take(5)->get();
+
+        $user = auth()->user();
+
+        $recommendedEvents = collect();
+
+        if ($user) {
+            // Kullanıcının tercih ettiği etkinlik türlerini al
+            $userTurs = DB::table('user_etkinlik_tur')
+                ->where('user_id', $user->id)
+                ->pluck('tur')
+                ->toArray();
+
+            // Kullanıcının tercih ettiği türlerden, şu anki etkinlik dışındaki 4 rastgele etkinliği seç
+            $recommendedEvents = EtkinlikYönetimi::whereIn('tur', $userTurs)
+                ->where('aktif', true)
+                ->where('id', '!=', $event->id)
+                ->inRandomOrder()
+                ->limit(4)
+                ->get();
+        }
+
+        // View'a değişkenleri gönder
+        return view('etkinlikler.detay', compact('event', 'recommendedEvents', 'duyurular'));
     }
 }
 

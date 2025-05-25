@@ -15,11 +15,11 @@
 <body>
 
 <!-- Navbar -->
-<nav class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: #d40000;">
+<nav class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: #8B0000;">
     <!-- Logo -->
     <div class="logo">
-        <a href="{{ url('/') }}" style="color: white; font-weight: bold; font-size: 20px; text-decoration: none;">
-            <img src="{{ asset('/logo.png') }}" alt="EventPlus Logo" style="height: 32px; vertical-align: middle;" />
+        <a href="{{ url('/') }}" style="color: white; font-weight: bold; font-size: 30px; text-decoration: none;">
+            <img src="{{ asset('/logo.png') }}" alt="EventPlus Logo" style="height: 55px; vertical-align: middle;" />
             EventPlus
         </a>
     </div>
@@ -139,6 +139,6 @@
         });
     });
 </script>
-
+@stack('scripts')
 </body>
 </html>

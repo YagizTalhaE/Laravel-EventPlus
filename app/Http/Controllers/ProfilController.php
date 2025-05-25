@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\UserEtkinlikTur;  // Modeli import et
+use Illuminate\Support\Facades\DB;
 
 class ProfilController extends Controller
 {
@@ -56,8 +58,22 @@ class ProfilController extends Controller
 
     public function hesapAyar()
     {
-        $user = Auth::user();
-        return view('profil.hesap-ayar', compact('user'));
+        $user = auth()->user();
+
+        // Kullanıcının seçtiği türler
+        $selectedTurs = DB::table('user_etkinlik_tur')
+            ->where('user_id', $user->id)
+            ->pluck('tur')
+            ->toArray();
+
+        // Veritabanından benzersiz etkinlik türlerini çekiyoruz
+        $allTurs = DB::table('etkinlik_yönetimis')
+            ->select('tur')
+            ->distinct()
+            ->pluck('tur')
+            ->toArray();
+
+        return view('profil.hesap-ayar', compact('user', 'selectedTurs', 'allTurs'));
     }
 
     public function hesapAyarGuncelle(Request $request)
@@ -67,13 +83,25 @@ class ProfilController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'turs' => 'nullable|array',
+            'turs.*' => 'string',
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
         $user->save();
 
-        return back()->with('success', 'Bilgiler başarıyla güncellendi.');
+        // Kullanıcının eski tercihlerini temizle
+        $user->preferredTurs()->delete();
+
+        // Yeni tercihleri ekle
+        if ($request->turs) {
+            foreach ($request->turs as $tur) {
+                $user->preferredTurs()->create(['tur' => $tur]);
+            }
+        }
+
+        return back()->with('success', 'Bilgiler ve önerilen türler başarıyla güncellendi.');
     }
 
     public function hesapSil(Request $request)
@@ -83,5 +111,32 @@ class ProfilController extends Controller
         $user->delete();
 
         return redirect('/')->with('success', 'Hesabınız silindi.');
+    }
+
+    public function turleriKaydet(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'tur' => 'array',
+            'tur.*' => 'string',
+        ]);
+
+        // Eski kayıtları sil
+        \DB::table('user_etkinlik_tur')->where('user_id', $user->id)->delete();
+
+        // Yeni kayıtları ekle
+        if ($request->has('tur')) {
+            foreach ($request->tur as $tur) {
+                \DB::table('user_etkinlik_tur')->insert([
+                    'user_id' => $user->id,
+                    'tur' => $tur,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Etkinlik türleri başarıyla kaydedildi.');
     }
 }

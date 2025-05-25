@@ -13,6 +13,9 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfilController;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\EtkinlikController;
+
 
 
 // Anasayfa (/ ve /anasayfa aynı view'a gider)
@@ -27,7 +30,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
-Route::get('/duyurular/{id}', [DuyuruController::class, 'show'])->name('duyurular.show');
+Route::get('/duyurular/{id}', [Duyurular::class, 'show'])->name('duyurular.show');
 
 Route::get('/change-password', [App\Http\Controllers\Auth\ChangePasswordController::class, 'showChangeForm'])->name('password.change.form');
 Route::post('/change-password', [App\Http\Controllers\Auth\ChangePasswordController::class, 'updatePassword'])->name('password.change');
@@ -43,12 +46,6 @@ Route::get('/events/search', [EventController::class, 'search'])->name('events.s
 // Etkinlik Oluşturma
 Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
 Route::post('/events', [EventController::class, 'store'])->name('events.store');
-
-// Sepet İşlemleri
-Route::get('/sepet', [CartController::class, 'index'])->name('cart.index');
-Route::post('/sepete-ekle', [CartController::class, 'ekle'])->name('sepete.ekle');
-Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-Route::delete('/sepet/bosalt', [CartController::class, 'clear'])->name('cart.clear');
 
 // Ürünler Sayfası
 Route::get('/products', function () {
@@ -92,13 +89,34 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/etkinlikler/tur/{tur}', [EventController::class, 'turBazliListele'])->name('etkinlikler.tur');
 Route::get('/etkinlik/{slug}', [EventController::class, 'detay'])->name('etkinlik.detay');
 
-Route::post('/sepet/ekle', [CartController::class, 'ekle'])->name('sepete.ekle');
+Route::get('/', [HomeController::class, 'index'])->name('anasayfa');
 
-Route::get('/sepetim', [CartController::class, 'index'])->name('sepetim');
-Route::post('/sepet/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+Route::get('/arama', [HomeController::class, 'arama'])->name('events.search');
 
+
+
+Route::get('/api/etkinlikler', [EtkinlikController::class, 'apiIndex']);
+Route::get('/api/populer-etkinlikler', [EtkinlikController::class, 'populerEtkinlikler']);
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profil/hesap-ayarlari', [ProfilController::class, 'showSettings'])->name('profil.hesap_ayarlari');
+    Route::post('/profil/hesap-ayarlari', [ProfilController::class, 'hesapAyarGuncelle'])->name('profil.hesap_ayarlari.kaydet');
+});
+Route::post('/profil/turler-kaydet', [ProfilController::class, 'turleriKaydet'])->name('profil.turler.kaydet');
+Route::get('/etkinlikler/tur/{tur}', [EtkinlikController::class, 'turEtkinlikleri']);
+Route::get('/etkinlikler/tur/{tur}', [EtkinlikController::class, 'turEtkinlikleri'])->name('etkinlikler.tur');
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/sepet/ekle', [CartController::class, 'addToCart'])->name('cart.add');
+    Route::get('/sepetim', [CartController::class, 'index'])->name('cart.index');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/delete-selected', [CartController::class, 'deleteSelected'])->name('cart.deleteSelected');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+});
 Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-Route::post('/cart/checkout', [CartController::class, 'checkout']);
-
-Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-Route::get('/cart/remove-get/{id}', [CartController::class, 'remove'])->name('cart.remove.get');
+Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.updateQuantity');

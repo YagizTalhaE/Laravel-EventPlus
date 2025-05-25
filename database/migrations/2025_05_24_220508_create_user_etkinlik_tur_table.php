@@ -9,13 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('clicks', function (Blueprint $table) {
+        Schema::create('user_etkinlik_tur', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('post_id')->constrained()->onDelete('cascade');
+            $table->string('tur');  // etkinlik türünün adı (örnek: "Konser", "Tiyatro" vb)
             $table->timestamps();
+
+            $table->unique(['user_id', 'tur']);  // Aynı türü bir kullanıcı birden fazla seçemesin
         });
     }
 
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('clicks');
+        Schema::dropIfExists('user_etkinlik_tur');
     }
 };

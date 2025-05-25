@@ -51,8 +51,18 @@ class User extends Authenticatable
     {
         return $query->where('is_approved', false);
     }
-    public function clicks()
+    public function preferredTurs()
     {
-        return $this->hasMany(Click::class);
+        return $this->hasMany(UserEtkinlikTur::class);
+    }
+
+    public function etkinlikTurleri()
+    {
+        return $this->hasMany(UserEtkinlikTur::class, 'user_id', 'id');
+    }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
     }
 }

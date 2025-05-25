@@ -77,25 +77,8 @@
         <div style="flex: 2;">
             <section class="events">
                 <h2>Popüler Etkinlikler</h2>
-                <div class="event-grid">
-                    @foreach ($populerEvents as $etkinlik)
-                        <div class="event-card">
-                            <img src="{{ asset('storage/' . $etkinlik->gorsel) }}" alt="{{ $etkinlik->baslik }}" class="event-image">
-
-                            <div class="event-details">
-                                <a href="{{ route('etkinlik.detay', ['slug' => $etkinlik->slug]) }}" class="event-title-link">
-                                    {{ $etkinlik->baslik }}
-                                </a>
-
-                                <div class="event-info"><strong>Şehir:</strong> {{ $etkinlik->adres }}</div>
-                                <div class="event-info"><strong>Tarih:</strong> {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->translatedFormat('d F Y') }}</div>
-                                <div class="event-info"><strong>Saat:</strong> {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->format('H:i') }}</div>
-                                <div class="event-info"><strong>Kontenjan:</strong> {{ $etkinlik->kontenjan }} kişi</div>
-
-                                <div class="price">₺{{ number_format($etkinlik->bilet_fiyati, 2) }}</div>
-                            </div>
-                        </div>
-                    @endforeach
+                <div id="populer-etkinlikler-listesi" class="event-grid">
+                    <!-- Kartlar buraya JS ile eklenecek -->
                 </div>
             </section>
         </div>
@@ -106,8 +89,8 @@
                 <h3 style="margin-bottom: 15px;">🎯 Önerilen Etkinlikler</h3>
 
                 @auth
-                    @if($recommendedPosts->count())
-                        @foreach ($recommendedPosts as $event)
+                    @if($recommendedEvents->count())
+                        @foreach ($recommendedEvents as $event)
                             <div style="
                         background: white;
                         padding: 15px;
@@ -129,7 +112,7 @@
                             </div>
                         @endforeach
                     @else
-                        <p>Henüz ilgi alanlarına göre öneri yok.</p>
+                        <p>Henüz ilgi alanlarına göre öneri yok.İlgi alanlarını profilim kısmında bulunan hesap ayarları sayfasından düzenleyebilirsin.</p>
                     @endif
                 @else
                     <p>Önerilen etkinlikleri görüntülemek için üyelik girişi yapınız.</p>
@@ -220,6 +203,45 @@
                 modal.style.display = 'none';
             }, 300);
         }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/api/populer-etkinlikler')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('populer-etkinlikler-listesi');
+                    container.innerHTML = ''; // önce temizle
+
+                    if (!data.length) {
+                        container.innerHTML = '<p>Henüz popüler etkinlik yok.</p>';
+                        return;
+                    }
+
+                    data.forEach(etkinlik => {
+                        const slug = etkinlik.slug || '#';
+                        const gorsel = etkinlik.gorsel ? `/storage/${etkinlik.gorsel}` : '/images/default-event.jpg';
+
+                        const etkinlikHTML = `
+                    <div class="event-card">
+                        <img src="${gorsel}" alt="${etkinlik.baslik}" class="event-image">
+                        <div class="event-details">
+                            <a href="/etkinlik/${slug}" class="event-title-link">${etkinlik.baslik}</a>
+                            <div class="event-info"><strong>Şehir:</strong> ${etkinlik.adres}</div>
+                            <div class="event-info"><strong>Tarih:</strong> ${new Date(etkinlik.baslangic_tarihi).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
+                            <div class="event-info"><strong>Saat:</strong> ${new Date(etkinlik.baslangic_tarihi).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        </div>
+                    </div>
+                `;
+                        container.insertAdjacentHTML('beforeend', etkinlikHTML);
+                    });
+                })
+                .catch(error => {
+                    console.error('Popüler etkinlikler yüklenirken hata:', error);
+                    const container = document.getElementById('populer-etkinlikler-listesi');
+                    container.innerHTML = '<p>Popüler etkinlikler yüklenirken bir hata oluştu.</p>';
+                });
+        });
     </script>
 
 @endsection

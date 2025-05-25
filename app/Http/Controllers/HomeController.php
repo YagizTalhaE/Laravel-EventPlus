@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\Duyurular;
 use Illuminate\Support\Facades\DB;
 use App\Models\EtkinlikYönetimi;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -14,45 +15,70 @@ class HomeController extends Controller
     {
         $user = auth()->user();
 
-        // Popüler ve aktif etkinlikleri al
+        // Popüler ve aktif etkinlikler
         $populerEvents = EtkinlikYönetimi::where('populer_mi', true)
-            ->where('aktif', true) // <--- burada aktif_mi değil aktif kullandık
-            ->latest()
+            ->where('aktif', true)
+            ->orderBy('baslangic_tarihi', 'asc')
             ->limit(4)
             ->get();
 
-        if (!$user) {
-            $duyurular = Duyurular::where('aktif', true)
-                ->latest()
-                ->limit(5)
-                ->get();
+        // Duyurular
+        $duyurular = Duyurular::where('aktif', true)
+            ->latest()
+            ->limit(5)
+            ->get();
 
-            return view('anasayfa', [
-                'recommendedPosts' => collect(),
-                'duyurular' => $duyurular,
-                'populerEvents' => $populerEvents,
-            ]);
+        // Kullanıcının seçtiği türler (user_etkinlik_tur tablosundan)
+        $userTurs = [];
+        if ($user) {
+            $userTurs = \DB::table('user_etkinlik_tur')
+                ->where('user_id', $user->id)
+                ->pluck('tur')
+                ->toArray();
         }
 
-        $topInterestIds = DB::table('clicks')
-            ->join('posts', 'clicks.post_id', '=', 'posts.id')
-            ->select('posts.interest_id', DB::raw('count(*) as total'))
-            ->where('clicks.user_id', $user->id)
-            ->groupBy('posts.interest_id')
-            ->orderByDesc('total')
-            ->limit(3)
-            ->pluck('posts.interest_id');
+        // Bu türlerden rastgele 3 aktif etkinlik çekelim
+        $recommendedEvents = collect();
+        if (!empty($userTurs)) {
+            $recommendedEvents = EtkinlikYönetimi::whereIn('tur', $userTurs)
+                ->where('aktif', true)
+                ->inRandomOrder()
+                ->limit(3)
+                ->get();
+        }
 
-        $recommendedPosts = Post::whereIn('interest_id', $topInterestIds)
-            ->latest()
-            ->limit(10)
-            ->get();
+        return view('anasayfa', [
+            'duyurular' => $duyurular,
+            'populerEvents' => $populerEvents,
+            'recommendedEvents' => $recommendedEvents,
+        ]);
+    }
+
+    public function arama(Request $request)
+    {
+        $query = $request->input('query');
+        $searchQuery = $query;
+
+        $searchResults = EtkinlikYönetimi::where('baslik', 'like', '%' . $query . '%')->get();
 
         $duyurular = Duyurular::where('aktif', true)
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('anasayfa', compact('recommendedPosts', 'duyurular', 'populerEvents'));
+        // Kullanıcı giriş yapmışsa önerilen etkinlikler
+        $recommendedEvents = collect();
+        if (Auth::check()) {
+            $user = Auth::user();
+            $userTurler = $user->etkinlikTurleri()->pluck('tur')->toArray();
+
+            $recommendedEvents = EtkinlikYönetimi::whereIn('tur', $userTurler)
+                ->where('aktif', 1)
+                ->inRandomOrder()
+                ->limit(3)
+                ->get();
+        }
+
+        return view('arama', compact('searchResults', 'searchQuery', 'duyurular', 'recommendedEvents'));
     }
 }

@@ -17,6 +17,8 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Illuminate\Database\Eloquent\Collection;
+use Filament\Forms\Components\Repeater;
+
 
 class EtkinlikYönetimiResource extends Resource
 {
@@ -81,18 +83,13 @@ class EtkinlikYönetimiResource extends Resource
                 ->maxLength(255)
                 ->required(),
 
-            TextInput::make('kontenjan')
-                ->label('Kontenjan')
-                ->numeric()
-                ->minValue(1)
-                ->required(),
 
-            TextInput::make('bilet_fiyati')
-                ->label('Bilet Fiyatı (₺)')
-                ->numeric()
-                ->minValue(0)
-                ->prefix('₺')
-                ->required(),
+            Toggle::make('aktif')
+                ->label('Aktif mi?')
+                ->onColor('success')
+                ->offColor('danger')
+                ->inline(false)
+                ->default(true),
 
 
             FileUpload::make('gorsel')
@@ -105,12 +102,45 @@ class EtkinlikYönetimiResource extends Resource
                 ->previewable(true)
                 ->openable()
                 ->nullable(),
-            \Filament\Forms\Components\Grid::make(2)->schema([
-                \Filament\Forms\Components\Toggle::make('aktif_mi')->label('Aktif mi?'),
-                \Filament\Forms\Components\Toggle::make('populer_mi')->label('Popüler mi?'),
-            ]),
+
+
+
+            Toggle::make('populer_mi')
+                ->label('Popüler mi?')
+                ->onColor('primary')
+                ->offColor('gray')
+                ->inline(false)
+                ->default(false),
+
+
+            Repeater::make('ticketTypes')
+                ->relationship('ticketTypes')
+                ->label('Bilet Türleri')
+                ->schema([
+                    TextInput::make('name')
+                        ->label('Bilet Türü')
+                        ->required(),
+
+                    TextInput::make('price')
+                        ->label('Fiyat (TL)')
+                        ->numeric()
+                        ->rules(['min:0'])
+                        ->required()
+                        ->extraInputAttributes(['min' => 0]),
+
+                    TextInput::make('kontenjan')
+                        ->label('Kontenjan')
+                        ->numeric()
+                        ->required()
+                        ->extraInputAttributes(['min' => 0, 'max' => 1000000]),
+                ])
+                ->collapsible()
+                ->createItemButtonLabel('Yeni Bilet Türü Ekle')
+                ->columns(3)
+                ->columnSpanFull(),
 
         ]);
+
     }
 
     public static function table(Table $table): Table

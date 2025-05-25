@@ -10,10 +10,11 @@ class EtkinlikYönetimi extends Model
 {
     use HasFactory;
 
-    protected $table = 'etkinlik_yönetimis'; // Migration'daki tablo adıyla aynı olmalı
+    protected $table = 'etkinlik_yönetimis';
 
     protected $fillable = [
         'baslik',
+        'slug',
         'aciklama',
         'kurallar',
         'baslangic_tarihi',
@@ -22,10 +23,8 @@ class EtkinlikYönetimi extends Model
         'adres',
         'ilce',
         'mekan',
-        'tur',
         'gorsel',
-        'kontenjan',
-        'bilet_fiyati',
+        'tur',
         'populer_mi',
     ];
 
@@ -39,5 +38,9 @@ class EtkinlikYönetimi extends Model
             $etkinlik->slug = Str::slug($etkinlik->baslik);
         });
     }
-}
 
+    public function ticketTypes()
+    {
+        return $this->hasMany(TicketType::class, 'etkinlik_yönetimis_id');
+    }
+}

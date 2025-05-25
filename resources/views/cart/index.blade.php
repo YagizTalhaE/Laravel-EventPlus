@@ -1,180 +1,228 @@
 @extends('layouts.app')
 
+@section('title', 'Sepetim')
+
 @section('content')
-    <style>
-        .item-check {
-            width: 22px;
-            height: 22px;
-            accent-color: #007bff; /* Mavi renk */
-            border: 2px solid #007bff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    <div class="container mt-4 pb-5">
+        <h2 class="mb-4">🛒 Sepetim</h2>
 
-        .checkbox-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
+        {{-- Otomatik kaybolan mesajlar için container üstü boşluk --}}
+        <div id="messageContainer">
+            @if(session('success'))
+                <div class="alert alert-success" id="successMessage">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger" id="errorMessage">{{ session('error') }}</div>
+            @endif
+        </div>
 
-    <div class="container mt-5 mb-5"> {{-- Footer ile boşluk için mb-5 eklendi --}}
-        <h2 class="mb-4">Sepetim</h2>
-
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        @if(count($cart) > 0)
-            <form id="cart-form">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                    <tr>
-                        <th style="width: 50px;">Seç</th>
-                        <th>Etkinlik</th>
-                        <th>Adet</th>
-                        <th>Bilet Fiyatı</th>
-                        <th>Toplam</th>
-                        <th>İşlem</th>
-                    </tr>
-                    <meta name="csrf-token" content="{{ csrf_token() }}">
-                    </thead>
-                    <tbody>
-                    @php $total = 0; @endphp
-                    @foreach($cart as $id => $item)
-                        @php $subtotal = $item['adet'] * $item['fiyat']; $total += $subtotal; @endphp
-                        <tr data-id="{{ $id }}">
-                            <td class="checkbox-wrapper">
-                                <input type="checkbox" class="item-check" />
-                            </td>
-                            <td>{{ $item['baslik'] }}</td>
-                            <td>
-                                <input type="number" class="form-control adet-input" value="{{ $item['adet'] }}" min="1" />
-                            </td>
-                            <td class="fiyat" data-fiyat="{{ $item['fiyat'] }}">₺{{ number_format($item['fiyat'], 2) }}</td>
-                            <td class="toplam">₺{{ number_format($subtotal, 2) }}</td>
-                            <td>
-                                <form action="{{ route('cart.remove', $id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <a href="{{ route('cart.remove.get', $id) }}" class="btn btn-danger btn-sm">Sil</a>
-                                </form>
-                            </td>
+        @if(count($cartItems))
+            <form method="POST" action="{{ route('cart.checkout') }}" id="paymentForm">
+                @csrf
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>Seç</th>
+                            <th>Etkinlik</th>
+                            <th>Bilet Türü</th>
+                            <th>Adet</th>
+                            <th>Birim Fiyat</th>
+                            <th>Toplam</th>
                         </tr>
-                    @endforeach
-                    <tr>
-                        <td colspan="4" class="text-end"><strong>Toplam:</strong></td>
-                        <td colspan="2"><strong id="genel-toplam">₺{{ number_format($total, 2) }}</strong></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </form>
+                        </thead>
+                        <tbody>
+                        @foreach($cartItems as $item)
+                            @php
+                                $lineTotal = $item->ticketType->price * $item->quantity;
+                            @endphp
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" class="item-checkbox">
+                                </td>
+                                <td>{{ $item->ticketType->etkinlik->baslik ?? 'Etkinlik Yok' }}</td>
+                                <td>{{ $item->ticketType->name }}</td>
+                                <td>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-decrease" data-id="{{ $item->id }}">−</button>
+                                        <span class="item-quantity" id="quantity-{{ $item->id }}">{{ $item->quantity }}</span>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-increase" data-id="{{ $item->id }}">+</button>
+                                    </div>
+                                </td>
+                                <td>₺{{ number_format($item->ticketType->price, 2) }}</td>
+                                <td>₺{{ number_format($lineTotal, 2) }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="d-flex justify-content-between mt-4">
-                <form action="{{ route('cart.clear') }}" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger">Sepeti Boşalt</button>
-                </form>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div><strong>Seçilenlerin Toplamı: ₺<span id="selectedTotal">0.00</span></strong></div>
+                    <div>
+                        <button type="button" class="btn btn-primary" id="showPaymentOptions">Ödeme Yap</button>
 
-                <div>
-                    <button class="btn btn-primary" onclick="togglePayment()" type="button">Ödeme Yap</button>
-
-                    <div id="payment-options" class="mt-3 d-none">
-                        <button onclick="handlePayment('kart')" class="btn btn-success">Kredi / Banka Kartı</button>
-                        <button onclick="handlePayment('havale')" class="btn btn-primary">Havale / EFT</button>
+                        <div id="paymentOptions" class="mt-2 text-end" style="display: none;">
+                            <p><strong>Ödeme Yöntemini Seçin:</strong></p>
+                            <button type="submit" name="payment_method" value="card" class="btn btn-outline-success me-2">💳 Kredi/Banka Kartı</button>
+                            <button type="submit" name="payment_method" value="eft" class="btn btn-outline-secondary">🏦 EFT/Havale</button>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                {{-- Seçilenleri sil ve Sepeti boşalt butonları, arada boşluk --}}
+                <div class="mt-3 mb-5 d-flex gap-2">
+                    <button type="button" id="deleteSelected" class="btn btn-danger">Seçilenleri Sil</button>
+                    <button type="button" id="clearCart" class="btn btn-warning">Sepeti Boşalt</button>
+                </div>
+            </form>
         @else
-            <p>Sepetiniz boş.</p>
+            <p class="empty-cart-message">Sepetiniz boş.</p>
         @endif
     </div>
 
     <script>
-        // Ödeme kutusunu açma/kapatma (isteğe bağlı)
-        function togglePayment() {
-            document.getElementById('payment-options').classList.toggle('d-none');
-        }
-
-        // Sepetteki toplam tutarı güncelleme
-        function updateToplam() {
-            let toplam = 0;
-
-            document.querySelectorAll('tr[data-id]').forEach(row => {
-                const checkbox = row.querySelector('.item-check');
-                if (checkbox.checked) {
-                    const adet = parseInt(row.querySelector('.adet-input').value) || 0;
-                    const fiyat = parseFloat(row.querySelector('.fiyat').dataset.fiyat);
-                    const satirToplam = adet * fiyat;
-
-                    row.querySelector('.toplam').innerText = '₺' + satirToplam.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-                    toplam += satirToplam;
-                } else {
-                    row.querySelector('.toplam').innerText = '₺0.00';
+        window.addEventListener('DOMContentLoaded', () => {
+            // Otomatik kaybolan flash mesajlar
+            ['successMessage', 'errorMessage'].forEach(id => {
+                const msg = document.getElementById(id);
+                if(msg){
+                    setTimeout(() => {
+                        msg.style.transition = 'opacity 0.5s ease';
+                        msg.style.opacity = '0';
+                        setTimeout(() => msg.style.display = 'none', 500);
+                    }, 3000);
                 }
             });
-
-            document.getElementById('genel-toplam').innerText = '₺' + toplam.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-        }
-
-        // Sayfa yüklendiğinde adet ve checkbox değişikliklerini dinle
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.adet-input, .item-check').forEach(el => {
-                el.addEventListener('input', updateToplam);
-                el.addEventListener('change', updateToplam);
-            });
-
-            updateToplam(); // Başlangıçta hesapla
         });
 
-        // Ödeme butonuna tıklanınca çalışan fonksiyon
-        function handlePayment(method) {
-            const selected = Array.from(document.querySelectorAll('.item-check'))
-                .filter(chk => chk.checked)
-                .map(chk => chk.closest('tr').dataset.id); // ID'leri array olarak al
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        const selectedTotalSpan = document.getElementById('selectedTotal');
+        const showPaymentOptionsBtn = document.getElementById('showPaymentOptions');
+        const paymentOptionsDiv = document.getElementById('paymentOptions');
+        const deleteSelectedBtn = document.getElementById('deleteSelected');
+        const clearCartBtn = document.getElementById('clearCart');
+        const messageContainer = document.getElementById('messageContainer');
 
-            if (selected.length === 0) {
-                alert("Lütfen ödeme yapmak için en az 1 ürün seçiniz.");
+        const itemTotals = @json($cartItems->pluck('ticketType.price')->toArray());
+        const itemQuantities = @json($cartItems->pluck('quantity')->toArray());
+
+        function updateSelectedTotal() {
+            let total = 0;
+            checkboxes.forEach((cb, i) => {
+                if (cb.checked) {
+                    total += itemTotals[i] * itemQuantities[i];
+                }
+            });
+            selectedTotalSpan.textContent = total.toFixed(2);
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener('change', updateSelectedTotal));
+
+        showPaymentOptionsBtn.addEventListener('click', () => {
+            paymentOptionsDiv.style.display = 'block';
+        });
+
+        deleteSelectedBtn.addEventListener('click', () => {
+            const selectedIds = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            if(selectedIds.length === 0) {
+                alert('Lütfen silmek için en az bir ürün seçin.');
                 return;
             }
 
-            fetch('/cart/checkout', {
+            fetch('{{ route('cart.deleteSelected') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({selected_items: selectedIds})
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        showTemporaryMessage('Seçilen ürünler silindi.', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showTemporaryMessage('Silme işlemi sırasında hata oluştu.', 'danger');
+                    }
+                })
+                .catch(() => showTemporaryMessage('Silme işlemi sırasında hata oluştu.', 'danger'));
+        });
+
+        clearCartBtn.addEventListener('click', () => {
+            fetch('{{ route('cart.clear') }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        showTemporaryMessage('Sepet boşaltıldı.', 'success');
+                        setTimeout(() => window.location.reload(), 3000);
+                    } else {
+                        showTemporaryMessage('Sepet boşaltılırken hata oluştu.', 'danger');
+                    }
+                })
+                .catch(() => showTemporaryMessage('Sepet boşaltılırken hata oluştu.', 'danger'));
+        });
+
+        function showTemporaryMessage(message, type = 'success') {
+            // Önce var olan mesajları temizle
+            messageContainer.innerHTML = '';
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            messageContainer.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.style.transition = 'opacity 0.5s ease';
+                alertDiv.style.opacity = '0';
+                setTimeout(() => alertDiv.remove(), 500);
+            }, 3000);
+        }
+
+        // Sayfa yüklendiğinde toplamı güncelle
+        updateSelectedTotal();
+
+
+        document.querySelectorAll('.quantity-increase').forEach(btn => {
+            btn.addEventListener('click', () => updateQuantity(btn.dataset.id, 'increase'));
+        });
+
+        document.querySelectorAll('.quantity-decrease').forEach(btn => {
+            btn.addEventListener('click', () => updateQuantity(btn.dataset.id, 'decrease'));
+        });
+
+        function updateQuantity(cartItemId, action) {
+            fetch('{{ route('cart.updateQuantity') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 },
                 body: JSON.stringify({
-                    selected: selected, // ['9', '13' gibi etkinlik ID'leri]
-                    odeme_yontemi: method // 'kart' ya da 'havale'
+                    id: cartItemId,
+                    action: action
                 })
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Sunucu hatası!");
-                    }
-                    return response.json();
-                })
+                .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        const container = document.querySelector('.container');
-                        const mesaj = document.createElement('div');
-                        mesaj.className = 'alert alert-success mt-4';
-                        mesaj.textContent = '✅ Ödeme Alındı! (' + (method === 'kart' ? 'Kredi / Banka Kartı' : 'Havale / EFT') + ')';
-                        container.prepend(mesaj);
-
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 3000);
+                        document.getElementById('quantity-' + cartItemId).textContent = data.new_quantity;
+                        window.location.reload(); // Güncel toplamları görmek için sayfayı yenile
                     } else {
-                        alert("Hata: " + (data.message || "Ödeme sırasında hata oluştu."));
+                        showTemporaryMessage(data.message || 'Güncelleme başarısız.', 'danger');
                     }
                 })
-                .catch(error => {
-                    console.error("Hata:", error);
-                    alert("Bir hata oluştu, lütfen tekrar deneyiniz.");
-                });
+                .catch(() => showTemporaryMessage('Sunucu hatası.', 'danger'));
         }
     </script>
 @endsection

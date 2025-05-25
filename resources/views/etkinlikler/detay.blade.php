@@ -80,61 +80,83 @@
 
                 {{-- Ortalanmış Başlık ve Görsel --}}
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 20px;">{{ $etkinlik->baslik }}</h1>
+                    <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 20px;">{{ $event->baslik }}</h1>
 
-                    <img src="{{ asset('storage/' . $etkinlik->gorsel) }}"
-                         alt="{{ $etkinlik->baslik }}"
+                    <img src="{{ asset('storage/' . $event->gorsel) }}"
+                         alt="{{ $event->baslik }}"
                          style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
                 </div>
 
-                {{-- Diğer içerikler sola hizalı şekilde devam eder --}}
-                <p><strong>Adres:</strong> {{ $etkinlik->adres }}, {{ $etkinlik->ilce }}</p>
-                <p><strong>Mekan:</strong> {{ $etkinlik->mekan }}</p>
+                {{-- Etkinlik Bilgileri --}}
+                <p><strong>Adres:</strong> {{ $event->adres }}, {{ $event->ilce }}</p>
+                <p><strong>Mekan:</strong> {{ $event->mekan }}</p>
                 <p><strong>Tarih:</strong>
-                    {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->translatedFormat('d F Y') }} -
-                    {{ \Carbon\Carbon::parse($etkinlik->bitis_tarihi)->translatedFormat('d F Y') }}
+                    {{ \Carbon\Carbon::parse($event->baslangic_tarihi)->translatedFormat('d F Y') }} -
+                    {{ \Carbon\Carbon::parse($event->bitis_tarihi)->translatedFormat('d F Y') }}
                 </p>
 
                 <p><strong>Saat:</strong>
-                    {{ \Carbon\Carbon::parse($etkinlik->baslangic_tarihi)->format('H:i') }} -
-                    {{ \Carbon\Carbon::parse($etkinlik->bitis_tarihi)->format('H:i') }}
+                    {{ \Carbon\Carbon::parse($event->baslangic_tarihi)->format('H:i') }} -
+                    {{ \Carbon\Carbon::parse($event->bitis_tarihi)->format('H:i') }}
                 </p>
-                <p><strong>Kontenjan:</strong> {{ $etkinlik->kontenjan }} kişi</p>
-                <p><strong>Bilet Fiyatı:</strong> ₺{{ number_format($etkinlik->bilet_fiyati, 2) }}</p>
 
                 <hr style="margin: 20px 0;">
 
+                <!-- Hava Durumu Alanı -->
+                <div id="havaDurumu" data-city="{{ $event->adres }}" style="margin-top: 20px; padding: 15px; background: #e0f7fa; border-radius: 8px;">
+                    Hava durumu bilgisi yükleniyor...
+                </div>
+
+                {{-- Detay ve Kurallar --}}
                 <h3 style="font-size: 1.2rem; font-weight: bold;">Etkinlik Detayları</h3>
-                <p>{!! nl2br(e($etkinlik->aciklama)) !!}</p>
+                <p>{!! nl2br(e($event->aciklama)) !!}</p>
 
                 <h3 style="font-size: 1.2rem; font-weight: bold; margin-top: 20px;">Kurallar</h3>
-                <p>{!! nl2br(e($etkinlik->kurallar)) !!}</p>
+                <p>{!! nl2br(e($event->kurallar)) !!}</p>
 
                 <hr style="margin: 20px 0;">
 
+                {{-- Başarı mesajı --}}
                 @if(session('success'))
                     <div style="color: green; font-weight: bold; margin-bottom: 15px;">
                         {{ session('success') }}
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('sepete.ekle') }}" style="margin-top: 20px;">
+                {{-- Bilet Türleri ve Sepete Ekleme Formu --}}
+                <form method="POST" action="{{ route('cart.add') }}" style="margin-top: 20px;">
                     @csrf
-                    <input type="hidden" name="etkinlik_id" value="{{ $etkinlik->id }}">
+                    <input type="hidden" name="event_id" value="{{ $event->id }}">
 
-                    <label for="adet" style="font-weight: bold;">Bilet Adedi:</label>
-                    <input
-                        type="number"
-                        id="adet"
-                        name="adet"
-                        value="1"
-                        min="1"
-                        max="{{ $etkinlik->kontenjan }}"
-                        style="width: 80px; padding: 5px; margin-left: 10px; margin-bottom: 10px;">
+                    <h3 style="font-weight: bold; margin-bottom: 10px;">Bilet Türleri</h3>
+
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        @foreach($event->ticketTypes as $ticket)
+                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>{{ $ticket->name }}</strong>
+                                    <p style="margin: 5px 0;">Fiyat: ₺{{ number_format($ticket->price, 2) }}</p>
+                                    <p style="margin: 5px 0;">Kontenjan: {{ $ticket->kontenjan }}</p>
+                                </div>
+                                <div>
+                                    <label for="bilets[{{ $ticket->id }}]" style="font-weight: bold;">Adet:</label>
+                                    <input
+                                        type="number"
+                                        name="bilets[{{ $ticket->id }}]"
+                                        id="bilets[{{ $ticket->id }}]"
+                                        value="0"
+                                        min="0"
+                                        max="{{ $ticket->kontenjan }}"
+                                        style="width: 70px; padding: 5px; margin-left: 10px;"
+                                    >
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
 
                     <button
                         type="submit"
-                        style="display: inline-block; background-color: #ff6600; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                        style="margin-top: 20px; background-color: #ff6600; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer;">
                         Sepete Ekle
                     </button>
                 </form>
@@ -142,14 +164,16 @@
             </div>
         </div>
 
+
+
         <!-- SAĞ: Önerilen Etkinlikler -->
         <div style="flex: 1;">
             <section style="background: #f9f9f9; padding: 20px; border-radius: 12px;">
                 <h3 style="margin-bottom: 15px;">🎯 Önerilen Etkinlikler</h3>
 
                 @auth
-                    @if($recommendedPosts->count())
-                        @foreach ($recommendedPosts as $event)
+                    @if($recommendedEvents->count())
+                        @foreach ($recommendedEvents as $event)
                             <div style="
                         background: white;
                         padding: 15px;
@@ -174,7 +198,7 @@
                         <p>Henüz ilgi alanlarına göre öneri yok.</p>
                     @endif
                 @else
-                    <p>Önerilen etkinlikleri görüntülemek için üyelik girişi yapınız.</p>
+                    <p>Önerilen eventleri görüntülemek için üyelik girişi yapınız.</p>
                 @endauth
             </section>
         </div>
@@ -265,4 +289,54 @@
     </script>
 
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const havaDurumuDiv = document.getElementById('havaDurumu');
+            const city = havaDurumuDiv.dataset.city || 'Istanbul';
+            const apiKey = "{{ env('OPENWEATHER_API_KEY') }}";
+
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&lang=tr&appid=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.cod === 200) {
+                        const desc = data.weather[0].description.toLowerCase();
+                        const temp = data.main.temp;
+                        const feelsLike = data.main.feels_like;
+                        const humidity = data.main.humidity;
+
+                        // Uygun olmayan açıklamaları burada tanımlıyoruz
+                        const olumsuzHavaKelimeleri = ["yağmur", "kar", "karla karışık", "fırtına", "rüzgar"];
+                        let uygunMu = true;
+
+                        for (const kelime of olumsuzHavaKelimeleri) {
+                            if (desc.includes(kelime)) {
+                                uygunMu = false;
+                                break;
+                            }
+                        }
+
+                        const uygunlukHTML = uygunMu
+                            ? `<p style="color: green;"><strong>✅ Bu etkinlik için hava koşulları UYGUN.</strong></p>`
+                            : `<p style="color: red;"><strong>⚠️ Bu etkinlik için hava koşulları UYGUN DEĞİL.</strong></p>`;
+
+                        havaDurumuDiv.innerHTML = `
+                        <h3>${city} Hava Durumu</h3>
+                        <p><strong>Durum:</strong> ${desc}</p>
+                        <p><strong>Sıcaklık:</strong> ${temp} °C</p>
+                        <p><strong>Hissedilen:</strong> ${feelsLike} °C</p>
+                        <p><strong>Nem:</strong> %${humidity}</p>
+                        ${uygunlukHTML}
+                    `;
+                    } else {
+                        havaDurumuDiv.innerText = "Hava durumu bilgisi alınamadı.";
+                    }
+                })
+                .catch(() => {
+                    havaDurumuDiv.innerText = "Hava durumu bilgisi alınırken hata oluştu.";
+                });
+        });
+    </script>
+@endpush
 

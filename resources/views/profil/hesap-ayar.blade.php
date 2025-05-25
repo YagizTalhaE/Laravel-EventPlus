@@ -35,6 +35,39 @@
                     </div>
                 </div>
 
+
+                    <!-- Önerilen Etkinlik Türleri -->
+                    <div class="card shadow-lg border-0 rounded-4 mb-4">
+                        <div class="card-header bg-primary text-white text-center rounded-top-4">
+                            <h4 class="mb-0">📋 Önerilen Etkinlik Türleri</h4>
+                        </div>
+                        <div class="card-body bg-light text-center">
+                            <form action="{{ route('profil.turler.kaydet') }}" method="POST">
+                                @csrf
+
+                                <div class="row justify-content-center">
+                                    @foreach($allTurs as $tur)
+                                        <div class="col-6 col-md-4 mb-3 d-flex justify-content-center">
+                                            <div class="form-check custom-check border rounded-3 shadow-sm p-3 w-100 text-start position-relative" style="max-width: 180px;">
+                                                <input class="form-check-input position-absolute top-50 start-0 translate-middle-y ms-2"
+                                                       type="checkbox"
+                                                       name="tur[]"
+                                                       value="{{ $tur }}"
+                                                       id="tur_{{ $loop->index }}"
+                                                       @if(in_array($tur, $selectedTurs)) checked @endif>
+                                                <label class="form-check-label ms-4" for="tur_{{ $loop->index }}">
+                                                    {{ ucfirst($tur) }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <button type="submit" class="btn btn-primary mt-2">Kaydet</button>
+                            </form>
+                        </div>
+                    </div>
+
                 <!-- Hesabı Sil -->
                 <div class="card shadow-lg border-0 rounded-4">
                     <div class="card-header bg-danger text-white text-center rounded-top-4">
