@@ -15,7 +15,7 @@ class Dashboard extends Page
     // Sol menüde görünecek başlık
     protected static ?string $title = 'Ana Sayfa';
 
-    // Sol menüde gösterilecek etiket (isteğe bağlı, varsayılan title)
+    // Sol menüde gösterilecek etiket
     protected static ?string $navigationLabel = 'Ana Sayfa';
 
     // Navigasyonda ilk sıraya almak için sıralama
@@ -27,3 +27,5 @@ class Dashboard extends Page
         return auth()->check(); // Giriş yapmış kullanıcılar için görünür
     }
 }
+
+
